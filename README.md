@@ -1,3 +1,3 @@
-# Script to compare UPVC 1.3 output files (non-standard .vcf) to reference variant files (.var)
+# Script to compare UPVC 1.4 output files (standard VCFv4.3) to reference variant files (.var)
 # Created by: [Dr. Dominique Lavenier](https://lavenier.net/homepage/)
 # Last modified by: Mohamed Moselhy
