@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-""" SCRIPT TO COMPARE OUTPUT FILE FROM UPVC 1.3 TO .VAR FILES
+""" SCRIPT TO COMPARE OUTPUT FILE FROM UPVC 1.4 TO .VAR FILES
 Created by: Dr. Dominique Lavenier, INRIA, Rennes
 Last modified by: Mohamed Moselhy, UWO, Canada
  """
@@ -13,8 +13,8 @@ fvar = open(sys.argv[1]+".var")
 l = fvar.readline()
 while l!= "":
     ll = l.split()
-    # Get chromosome_position
-    ident = ll[0]+"_"+ll[1]
+    # Get position
+    ident = ll[1]
     # Get the type of substitution and variant
     DVAR[ident] = ll[2]+" "+ll[-2]
     l = fvar.readline()
@@ -25,16 +25,25 @@ DVCF = {}
 fvcf = open(sys.argv[1]+".vcf")
 l = fvcf.readline()
 while l!= "":
-    ll = l.split()
-    # Get qualities of variant
-    q0 = int(ll[4][1:-1].split('/')[0])
-    q1 = int(ll[4][1:-1].split('/')[1])
-    # If the quality meets threshold, add it to the dataset to compare
-    if q0 >= 5 and q1 < 200:
-        # Get chromosome_position
-        ident = ll[0]+"_"+ll[1]
-        # Get the type of substitution and variant
-        DVCF[ident] = ll[2]+" "+ll[3]
+    if l.startswith('#'):
+        l = fvcf.readline()
+        continue
+    ll = l.split('\t')
+    # Get position
+    ident = ll[1]
+    # Get the type of substitution and variant
+    lenRef = len(ll[3])
+    lenAlt = len(ll[4])
+    if(lenRef == lenAlt):
+        varType = 'S'
+        alt = ll[4]
+    elif (lenRef > lenAlt):
+        varType = 'D'
+        alt = ll[4][1:]
+    else:
+        varType = 'I'
+        alt = ll[4][:-1]
+    DVCF[ident] = varType+" "+alt
     l = fvcf.readline()
 fvcf.close()
 
@@ -48,14 +57,12 @@ delta = 20
 TP = 0
 FN = 0
 for x in DVAR:
-    # Get the chromosome number
-    ns = int(x.split('_')[0])
     # Get the variant position
-    ix = int(x.split('_')[1])
+    ix = int(x)
     ok = False
     # Iterate through other file's variants until a match is found or until lee-way is reached
     for i in range(ix-delta,ix+delta+1):
-        ident = str(ns)+"_"+str(i)
+        ident = str(i)
         # If the same variant is found in the other file, then stop there
         if ident in DVCF and DVCF[ident] == DVAR[x]:
             ok = True
@@ -76,11 +83,10 @@ ffn.close()
 ffp = open(sys.argv[1]+".fp","w")
 FP = 0
 for x in DVCF:
-    ns = int(x.split('_')[0])
-    ix = int(x.split('_')[1])
+    ix = int(x)
     ok = False
     for i in range(ix-delta,ix+delta):
-        ident = str(ns)+"_"+str(i)
+        ident = str(i)
         if ident in DVAR and DVAR[ident] == DVCF[x]:
             ok = True
             break
