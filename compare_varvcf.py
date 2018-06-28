@@ -5,11 +5,25 @@ Created by: Dr. Dominique Lavenier, INRIA, Rennes
 Last modified by: Mohamed Moselhy, UWO, Canada
  """
 
-import sys
+import sys, os
+
+if len(sys.argv) != 2:
+    print("Usage: {} fileprefix".format(sys.argv[0]))
+    sys.exit(1)
+
+fvarname = sys.argv[1]+".var"
+fvcfname = sys.argv[1]+".vcf"
+
+if not os.path.exists(fvarname):
+    print("File {} does not exist".format(fvarname))
+    sys.exit(1)
+elif not os.path.exists(fvcfname):
+    print("File {} does not exist".format(fvcfname))
+    sys.exit(1)
 
 # Data in .var file
 DVAR = {}
-fvar = open(sys.argv[1]+".var")
+fvar = open(fvarname)
 l = fvar.readline()
 while l!= "":
     ll = l.split()
@@ -22,7 +36,7 @@ fvar.close()
 
 # Data in VCF file
 DVCF = {}
-fvcf = open(sys.argv[1]+".vcf")
+fvcf = open(fvcfname)
 l = fvcf.readline()
 while l!= "":
     if l.startswith('#'):
